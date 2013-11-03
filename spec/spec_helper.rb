@@ -23,18 +23,18 @@ ActiveRecord::Schema.define(:version => 1) do
     t.string :type, :null => false
   end
 
-  create_table :basic_account_data do |t|
+  create_table :basic_account_subjects do |t|
     t.integer :basic_account_id, :null => false
   end
   
-  create_table :bank_account_data do |t|
+  create_table :bank_account_subjects do |t|
     t.integer :bank_account_id, :null => false
     t.integer :bank_id, :null => false
     t.string :account_number, :null => false
     t.string :sort_code, :null => false
   end
 
-  create_table :credit_card_data do |t|
+  create_table :credit_card_subjects do |t|
     t.integer :credit_card_id, :null => false
     t.string :credit_card_number, :null => false
     t.date :expiry_date, :null => false
@@ -48,7 +48,7 @@ ActiveRecord::Schema.define(:version => 1) do
     t.integer :unusual_table_name_id, :null => false
   end
 
-  create_table :unusual_foreign_key_data do |t|
+  create_table :unusual_foreign_key_subjects do |t|
     t.integer :unusual_foreign_key, :null => false
   end
 
@@ -56,7 +56,7 @@ ActiveRecord::Schema.define(:version => 1) do
     t.boolean :is_live, :null => false
   end
 
-  create_table :scoped_account_data do |t|
+  create_table :scoped_account_subjects do |t|
     t.boolean :scoped_account_id, :null => false
   end
 end
