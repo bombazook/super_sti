@@ -37,6 +37,22 @@ class Bank < ActiveRecord::Base
   has_one :bank_account
 end
 
+class ExtendedBasicAccount < BasicAccount
+end
+
+class ExtendedBasicAccountWithOtherDataSubject < ActiveRecord::Base
+end
+
+class ExtendedBasicAccountWithOtherData < BasicAccount
+end
+
+class ExtendedBasicAccountWithoutSubjectInheritance < ActiveRecord::Base
+  has_subject :inherit_subject_type => false, :foreign_key => :basic_account_id
+end
+
+class InheritedAccountWithOtherData < ExtendedBasicAccountWithoutSubjectInheritance
+end
+
 # belongs_to Subjects
 
 class StiBaseSubject < ActiveRecord::Base
@@ -63,6 +79,7 @@ end
 class SuperSTI::WithExistingNameOfSelfInherited < ActiveRecord::Base
 end
 
+
 # belongs_to nodels
 
 
@@ -80,8 +97,4 @@ end
 
 class WithInheritSubjectFalse < ActiveRecord::Base
   belongs_to_subject :inherit_subject_type => false
-end
-
-class WithInheritRelationFalse < ActiveRecord::Base
-  belongs_to_subject :inherit_relation => false
 end

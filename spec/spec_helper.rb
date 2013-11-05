@@ -59,6 +59,23 @@ ActiveRecord::Schema.define(:version => 1) do
   create_table :scoped_account_subjects do |t|
     t.boolean :scoped_account_id, :null => false
   end
+
+  create_table :extended_basic_account_with_other_data_subjects do |t|
+    t.integer :basic_account_id
+  end
+
+  create_table :inherited_account_with_other_data_subjects do |t|
+    t.integer :inherited_account_with_other_data_id
+    #t.integer :basic_account_id
+  end
+
+  create_table :extended_basic_account_without_subject_inheritances do |t|
+    
+  end
+
+  create_table :extended_basic_account_without_subject_inheritance_subjects do |t|
+    t.integer :basic_account_id
+  end
 end
 
 require 'test_classes'

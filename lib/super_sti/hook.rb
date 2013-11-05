@@ -18,37 +18,59 @@ module SuperSTI
     #####
 
     define_method "belongs_to_#{DEFAULT_AFFIX}" do |*args, &block|
-      options = args.extract_options!
-      setup_options! options
-
-      association_options = options.slice! :table_name
+      options = common_setup(*args, &block)
+      association_name = options[:association_name]
+      options.except!(:association_name, :association_class, "inherit_#{DEFAULT_AFFIX}_type".to_sym, :table_name, :parent_association_class)
+      belongs_to association_name, options
+      super_sti_options[association_name][:reflection] = reflections[association_name]
+      super_sti_options[association_name][:method] = "belongs_to_#{DEFAULT_AFFIX}".to_sym
     end
 
     define_method "has_#{DEFAULT_AFFIX}" do |*args, &block|
-      options = args.extract_options!
-      create_options_storage
-      options[:association_name] = args.shift if args.first.kind_of? Symbol or args.first.kind_of? String
-      setup_options! options
-      setup_delegation options
-      setup_inheritance options
-      
-      association_name = options.delete :association_name
-      options.delete :table_name
-      klass = options.delete(:association_class)
+      options = common_setup(*args, &block)
+      association_name = options[:association_name]
 
-      klass.class_eval &block if block
-      # Add a reference to a data object that gets created when this is created
+      # in rails 4.1 it would look like this
+      # valid_options = ActiveRecord::Associations::Builder::HasOne.valid_options(options)
+      # options.slice! valid_options
+
+      options.except!(:association_name, :association_class, "inherit_#{DEFAULT_AFFIX}_type".to_sym, :table_name, :parent_association_class)
+
       has_one association_name, options
+
+      super_sti_options[association_name][:reflection] = reflections[association_name]
+
+      super_sti_options[association_name][:method] = "has_#{DEFAULT_AFFIX}".to_sym
     end
 
 
     private
+      def common_setup *args, &block
+        create_options_storage
+
+        options = args.extract_options!
+        options.symbolize_keys!
+        options[:association_name] = args.shift if args.first.kind_of? Symbol or args.first.kind_of? String
+        setup_options! options
+        super_sti_options[options[:association_name]] = {}
+        super_sti_options[options[:association_name]][:options] = options.deep_dup
+
+        setup_delegation options
+        setup_inheritance unless superclass.respond_to? :super_sti_options
+        
+        options[:association_class].class_eval &block if block
+
+        options
+      end
+
+
       def create_options_storage
         class << self
           attr_reader :super_sti_options
           private
             attr_writer :super_sti_options
         end
+        @super_sti_options ||= {}
       end
 
       def setup_options! options
@@ -60,13 +82,16 @@ module SuperSTI
           data_class = create_data_class(options.slice :class_name, :table_name) if data_class.nil?
         else
           model_underscore = "#{self.name.underscore.gsub("/", "_")}_#{options[:association_name]}"
-          options[:table_name] ||= model_underscore.pluralize
           fallback_class_name = ["super_s_t_i", model_underscore].join('/').classify
           data_class = fallback_class_name.safe_constantize
           data_class ||= model_underscore.classify.safe_constantize
           if data_class
             options[:class_name] = data_class.name
+          elsif parent_class_name = options.delete(:parent_association_class) and parent_class_name.present?
+            options[:class_name] = parent_class_name
+            data_class = parent_class_name.constantize
           else
+            options[:table_name] ||= model_underscore.pluralize
             options[:class_name] = fallback_class_name
             data_class = create_data_class(options.slice :class_name, :table_name)
           end
@@ -81,12 +106,24 @@ module SuperSTI
         namespace = options[:class_name].deconstantize.constantize
         const = options[:class_name].demodulize
         namespace.const_set const, klass
+        klass
       end
 
-      def setup_inheritance options={}
+      def setup_inheritance
         class << self
           def inherited subclass
+            super
+            self.super_sti_options.each do |key, options|
+              sending_options = options[:options].except(:class_name, :table_name)
+              if sending_options["inherit_#{DEFAULT_AFFIX}_type".to_sym] != false
+                sending_options[:parent_association_class] = options[:options][:class_name]
+                sending_options[:foreign_key] ||= self.name.foreign_key
+              else
+                sending_options[:foreign_key] ||= subclass.name.foreign_key
+              end
 
+              subclass.send(options[:method], options[:association_name], sending_options)
+            end
           end
         end
       end

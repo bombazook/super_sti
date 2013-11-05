@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Jeremy Walker", "Alexander Kostrov"]
   s.email       = ["jez.walker@gmail.com", "bombazook@gmail.com"]
   s.homepage    = "https://github.com/iHiD/super_sti"
-  s.summary     = %q{Ruby Rails - Add has_extra_data, belongs_to_extra_data to SDI models with clean database tables.}
-  s.description = %q{Adds an add_extra_data and belongs_to_extra_data methods to ActiveRecord that find or create an extra data table. 
+  s.summary     = %q{Ruby Rails - Add has_subject, belongs_to_subject to SDI models with clean database tables.}
+  s.description = %q{Adds an has_subject and belongs_to_subject methods to ActiveRecord that find or create an extra data table. 
                     Means you can use STI but keep your database clean.}
 
   if RUBY_VERSION < "1.9.3"

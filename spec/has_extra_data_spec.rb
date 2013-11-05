@@ -97,6 +97,29 @@ describe "Super STI models with has_extra_data models" do
     # Check the database has been updated
     BankAccount.find(@bank_account.id).account_number.should == "87654321"
   end
+
+
+  describe "inheritance of classes with has_one" do
+    it "inherit relation and subject when no corresponded subject model" do
+      #raise ExtendedBasicAccount.super_sti_options.inspect
+      account = ExtendedBasicAccount.create
+      superclass_account = BasicAccount.create
+      account.send(SuperSTI::Hook::DEFAULT_AFFIX).class.should == superclass_account.send(SuperSTI::Hook::DEFAULT_AFFIX).class
+    end
+
+    it "use corresponded relation if exists" do
+      account = ExtendedBasicAccountWithOtherData.create
+      account.send(SuperSTI::Hook::DEFAULT_AFFIX).class.should == ExtendedBasicAccountWithOtherDataSubject
+    end
+
+    it "forcefully create non existed subject class if declared :inherit_subject_type => false on parent relation" do
+      account = InheritedAccountWithOtherData.create
+      superclass_account = ExtendedBasicAccountWithoutSubjectInheritance.create
+      account.send(SuperSTI::Hook::DEFAULT_AFFIX).class.should_not == superclass_account.send(SuperSTI::Hook::DEFAULT_AFFIX).class
+      raise InheritedAccountWithOtherData.reflections.inspect
+    end
+
+  end
   
   
 end
