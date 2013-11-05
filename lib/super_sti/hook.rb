@@ -119,7 +119,11 @@ module SuperSTI
               sending_options = options[:options].except(:class_name, :table_name)
               if sending_options["inherit_#{DEFAULT_AFFIX}_type".to_sym] != false
                 sending_options[:parent_association_class] = options[:options][:class_name]
-                sending_options[:foreign_key] ||= self.name.foreign_key
+                if options[:reflection].belongs_to?
+                  sending_options[:foreign_key] ||= sending_options[:parent_association_class].foreign_key
+                else 
+                  sending_options[:foreign_key] ||= self.name.foreign_key
+                end
               else
                 #sending_options[:foreign_key] ||= subclass.name.foreign_key
                 sending_options.except!(:foreign_key)
