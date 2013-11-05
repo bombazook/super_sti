@@ -46,7 +46,7 @@ end
 class ExtendedBasicAccountWithOtherData < BasicAccount
 end
 
-class ExtendedBasicAccountWithoutSubjectInheritance < ActiveRecord::Base
+class ExtendedBasicAccountWithoutSubjectInheritance < BasicAccount
   has_subject :inherit_subject_type => false, :foreign_key => :basic_account_id
 end
 

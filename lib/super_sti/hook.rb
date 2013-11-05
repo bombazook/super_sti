@@ -1,3 +1,5 @@
+require 'pp'
+
 module SuperSTI
   
   class DataMissingError < ::StandardError;end
@@ -119,7 +121,12 @@ module SuperSTI
                 sending_options[:parent_association_class] = options[:options][:class_name]
                 sending_options[:foreign_key] ||= self.name.foreign_key
               else
-                sending_options[:foreign_key] ||= subclass.name.foreign_key
+                #sending_options[:foreign_key] ||= subclass.name.foreign_key
+                sending_options.except!(:foreign_key)
+              end
+              subclass.class_eval do
+                undef_method("autosave_associated_records_for_#{key}")
+                undef_method("validate_associated_records_for_#{key}")
               end
 
               subclass.send(options[:method], options[:association_name], sending_options)
@@ -129,10 +136,10 @@ module SuperSTI
       end
 
       def setup_delegation options={}
-        before_create :get_data
         assoc_name = options[:association_name]
+        before_create "get_#{assoc_name}"
         # A helper method which gets the existing data or builds a new object
-        define_method :get_data do
+        define_method "get_#{assoc_name}" do
           data = self.send(assoc_name).presence
           return data if data.present?
           return self.send("build_#{assoc_name}") if new_record?
@@ -142,7 +149,7 @@ module SuperSTI
         # Override respond_to? to check both this object and its data object.
         define_method "respond_to?" do |sym, include_private = false|
           begin
-            super(sym, include_private) || get_data.respond_to?(sym, include_private)
+            super(sym, include_private) || self.send("get_#{assoc_name}").respond_to?(sym, include_private)
           rescue SuperSTI::DataMissingError
             false
           end
@@ -155,7 +162,7 @@ module SuperSTI
           begin
             super(sym, *args)
           rescue NoMethodError
-            get_data.send(sym, *args)
+            self.send("get_#{assoc_name}").send(sym, *args)
           end
         end
 

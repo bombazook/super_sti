@@ -115,8 +115,9 @@ describe "Super STI models with has_extra_data models" do
     it "forcefully create non existed subject class if declared :inherit_subject_type => false on parent relation" do
       account = InheritedAccountWithOtherData.create
       superclass_account = ExtendedBasicAccountWithoutSubjectInheritance.create
+      superclass_account.subject.class.should == SuperSTI::ExtendedBasicAccountWithoutSubjectInheritanceSubject
       account.send(SuperSTI::Hook::DEFAULT_AFFIX).class.should_not == superclass_account.send(SuperSTI::Hook::DEFAULT_AFFIX).class
-      raise InheritedAccountWithOtherData.reflections.inspect
+      #raise InheritedAccountWithOtherData.reflections.inspect
     end
 
   end
