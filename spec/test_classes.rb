@@ -12,47 +12,48 @@ private
 end
 
 class BasicAccount < Account
-  has_subject
+  has_extra_data
 end
 
 class BankAccount < Account
-  has_subject do
+  has_extra_data do
     belongs_to :bank
   end
 end
 
 class CreditCard < Account
-  has_subject
+  has_extra_data
 end
 
 class UnusualForeignKey < Account
-  has_subject :foreign_key => "unusual_foreign_key"
+  has_extra_data :foreign_key => "unusual_foreign_key"
 end
 
 class UnusualTableName < Account
-  has_subject :table_name => "unusual_table_name"
+  has_extra_data :table_name => "unusual_table_name"
 end
 
 class Bank < ActiveRecord::Base
   has_one :bank_account
 end
 
-class ExtendedBasicAccount < BasicAccount
-end
+# table_name doesnt work if using not autocreated class
 
-class ExtendedBasicAccountWithOtherDataSubject < ActiveRecord::Base
-end
+# default inheritance without child data
 
-class ExtendedBasicAccountWithOtherData < BasicAccount
-end
 
-class ExtendedBasicAccountWithoutSubjectInheritance < BasicAccount
-  has_subject :inherit_subject_type => false, :foreign_key => :basic_account_id
-end
+# default inheritance with child data
 
-class InheritedAccountWithOtherData < ExtendedBasicAccountWithoutSubjectInheritance
-end
+# inheritance with child explicit no option inheritance
 
+# inheritance with child inherit class_name to true and child data class exists
+
+
+# removing inheritance from options behaviour with :default option
+
+
+
+=begin
 # belongs_to Subjects
 
 class StiBaseSubject < ActiveRecord::Base
@@ -98,3 +99,5 @@ end
 class WithInheritSubjectFalse < ActiveRecord::Base
   belongs_to_subject :inherit_subject_type => false
 end
+
+=end

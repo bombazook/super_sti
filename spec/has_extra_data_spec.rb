@@ -8,8 +8,8 @@ describe "Super STI models with has_extra_data models" do
     @valid_bank_account_attributes = {:account_number => "12345678", :sort_code => "12 34 56", :bank => @bank}
   end
   
-  it "have the #{SuperSTI::Hook::DEFAULT_AFFIX} method" do
-    @bank_account.should respond_to(SuperSTI::Hook::DEFAULT_AFFIX)
+  it "uses default :data method to access association" do
+    @bank_account.should respond_to :data
   end
 
   it "can have variables set" do
@@ -17,16 +17,16 @@ describe "Super STI models with has_extra_data models" do
     @bank_account.sort_code = "12 34 56"
     @bank_account.bank = @bank
     @bank_account.save!
-    @bank_account.send(SuperSTI::Hook::DEFAULT_AFFIX).id.should_not == 0
+    @bank_account.data.id.should_not == 0
   end
   
-  it "creates #{SuperSTI::Hook::DEFAULT_AFFIX} with the test class" do
+  it "creates data with the test class" do
     @bank_account.attributes = @valid_bank_account_attributes
     @bank_account.save!
-    @bank_account.send(SuperSTI::Hook::DEFAULT_AFFIX).id.should_not == 0
+    @bank_account.data.id.should_not == 0
   end
 
-  it "can read attributes" do
+  it "can read attributes through association" do
     @bank_account.attributes = @valid_bank_account_attributes
     @bank_account.save!
     @bank_account = BankAccount.find(@bank_account.id)
@@ -42,12 +42,12 @@ describe "Super STI models with has_extra_data models" do
   
   it "can have a specifc foreign_key" do
     obj = UnusualForeignKey.create!
-    obj.send(SuperSTI::Hook::DEFAULT_AFFIX).should_not be_nil
+    obj.data.should_not be_nil
   end
   
   it "can have any table name" do
     obj = UnusualTableName.create!
-    obj.send(SuperSTI::Hook::DEFAULT_AFFIX).should_not be_nil
+    obj.data.should_not be_nil
   end
   
   it "does not break scoped" do
@@ -59,28 +59,28 @@ describe "Super STI models with has_extra_data models" do
   end
   
   it "correctly gets parent id, not data id" do
-    ActiveRecord::Base.connection.execute("INSERT INTO basic_account_#{SuperSTI::Hook::DEFAULT_AFFIX.to_s.pluralize}('basic_account_id') VALUES (0)")
+    ActiveRecord::Base.connection.execute("INSERT INTO basic_account_data('basic_account_id') VALUES (0)")
     ba = BasicAccount.create!
-    ba.id.should_not == ba.send(SuperSTI::Hook::DEFAULT_AFFIX).id
+    ba.id.should_not == ba.data.id
     
     ba2 = BasicAccount.find(ba.id)
     ba2.id.should == ba.id
-    ba2.send(SuperSTI::Hook::DEFAULT_AFFIX).id.should == ba.send(SuperSTI::Hook::DEFAULT_AFFIX).id
-    ba2.id.should_not == ba2.send(SuperSTI::Hook::DEFAULT_AFFIX).id
+    ba2.data.id.should == ba.data.id
+    ba2.id.should_not == ba2.data.id
     
     ba3 = Account.find(ba.id)
     ba3.id.should == ba.id
-    ba3.send(SuperSTI::Hook::DEFAULT_AFFIX).id.should == ba.send(SuperSTI::Hook::DEFAULT_AFFIX).id
-    ba3.id.should_not == ba3.send(SuperSTI::Hook::DEFAULT_AFFIX).id
+    ba3.data.id.should == ba.data.id
+    ba3.id.should_not == ba3.data.id
   end
   
   it "if extra data is deleted, it still loads but can't load extra data" do
     ba = BankAccount.create!(@valid_bank_account_attributes)
-    ActiveRecord::Base.connection.execute("DELETE FROM bank_account_#{SuperSTI::Hook::DEFAULT_AFFIX.to_s.pluralize} where id = #{ba.send(SuperSTI::Hook::DEFAULT_AFFIX.to_s).id}")
+    ActiveRecord::Base.connection.execute("DELETE FROM bank_account_data where id = #{ba.data.id}")
     
     ba2 = BankAccount.find(ba.id)
     ba2.id.should == ba.id
-    ba2.send(SuperSTI::Hook::DEFAULT_AFFIX).should be_nil 
+    ba2.data.should be_nil 
     lambda{ba2.bank_id}.should raise_error(SuperSTI::DataMissingError)
   end
   
@@ -96,30 +96,74 @@ describe "Super STI models with has_extra_data models" do
     
     # Check the database has been updated
     BankAccount.find(@bank_account.id).account_number.should == "87654321"
+  end   
+
+  describe "inheritance of classes with has_one" do
+    it "uses its own data type unless parent has :inherit => {:class_name => true} " do
+      class A < ActiveRecord::Base; has_extra_data; end
+      class BData < ActiveRecord::Base; end
+      class B < A; end
+
+      B.super_sti_config[:data].should include("class_name" => "BData")
+      b = B.create!
+      b.data.class.should == BData
+    end
+
+    it "uses parent data type if its own one doesnt exist" do
+      class A2 < ActiveRecord::Base; has_extra_data; end
+      class B2 < A2; has_extra_data :foreign_key => :a2_id; end
+
+      a2 = A2.create!
+      a2.data.class.should == SuperSTI::A2Data
+
+      B2.super_sti_config[:data].should include("class_name" => "SuperSTI::A2Data")
+      b2 = B2.create!
+      b2.data.class.should == SuperSTI::A2Data
+    end
+
+    it "uses its own data type if inherit :class_name set to false" do
+      class A3 < ActiveRecord::Base; has_extra_data :inherit => {:class_name => false}; end
+      class B3 < A3; end
+
+      B3.super_sti_config[:data].should include("class_name" => "SuperSTI::B3Data")
+      b3 = B3.create!
+      b3.data.class.should == SuperSTI::B3Data
+    end
+
+    it "uses parent clas_name if :inherit => {:class_name => true} even if corresponded class exists" do
+      class A4 < ActiveRecord::Base; has_extra_data :inherit => {:class_name => true}; end
+      class B4Data < ActiveRecord::Base; end
+      class B4 < A4; has_extra_data :foreign_key => :a4_id; end
+
+      B4.super_sti_config[:data].should include("class_name" => "SuperSTI::A4Data")
+      b4 = B4.create!
+      b4.data.class.should == SuperSTI::A4Data
+    end
+
+    it "uses class_name explicitly set in subclass even if :inherit => {:class_name => true} set" do
+      class A5 < ActiveRecord::Base; has_extra_data :inherit => {:class_name => true}; end
+      class B5Data < ActiveRecord::Base; end
+      class B5 < A5; has_extra_data :class_name => "B5Data"; end
+
+      B5.super_sti_config[:data].should include("class_name" => "B5Data")
+      b5 = B5.create!
+      b5.data.class.should == B5Data
+    end
   end
 
 
-  describe "inheritance of classes with has_one" do
-    it "inherit relation and subject when no corresponded subject model" do
-      #raise ExtendedBasicAccount.super_sti_options.inspect
-      account = ExtendedBasicAccount.create
-      superclass_account = BasicAccount.create
-      account.send(SuperSTI::Hook::DEFAULT_AFFIX).class.should == superclass_account.send(SuperSTI::Hook::DEFAULT_AFFIX).class
+  describe "support several extra_data" do
+    it "safely overrides existing relation" do
     end
 
-    it "use corresponded relation if exists" do
-      account = ExtendedBasicAccountWithOtherData.create
-      account.send(SuperSTI::Hook::DEFAULT_AFFIX).class.should == ExtendedBasicAccountWithOtherDataSubject
+    it "support method_missing on each of extra_data" do
     end
 
-    it "forcefully create non existed subject class if declared :inherit_subject_type => false on parent relation" do
-      account = InheritedAccountWithOtherData.create
-      superclass_account = ExtendedBasicAccountWithoutSubjectInheritance.create
-      superclass_account.subject.class.should == SuperSTI::ExtendedBasicAccountWithoutSubjectInheritanceSubject
-      account.send(SuperSTI::Hook::DEFAULT_AFFIX).class.should_not == superclass_account.send(SuperSTI::Hook::DEFAULT_AFFIX).class
-      #raise InheritedAccountWithOtherData.reflections.inspect
+    it "support respond_to? on each of extra_data" do
     end
 
+    it "creates each of extra_data subjects on base model creation" do
+    end
   end
   
   

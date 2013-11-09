@@ -23,18 +23,18 @@ ActiveRecord::Schema.define(:version => 1) do
     t.string :type, :null => false
   end
 
-  create_table :basic_account_subjects do |t|
+  create_table :basic_account_data do |t|
     t.integer :basic_account_id, :null => false
   end
   
-  create_table :bank_account_subjects do |t|
+  create_table :bank_account_data do |t|
     t.integer :bank_account_id, :null => false
     t.integer :bank_id, :null => false
     t.string :account_number, :null => false
     t.string :sort_code, :null => false
   end
 
-  create_table :credit_card_subjects do |t|
+  create_table :credit_card_data do |t|
     t.integer :credit_card_id, :null => false
     t.string :credit_card_number, :null => false
     t.date :expiry_date, :null => false
@@ -48,7 +48,7 @@ ActiveRecord::Schema.define(:version => 1) do
     t.integer :unusual_table_name_id, :null => false
   end
 
-  create_table :unusual_foreign_key_subjects do |t|
+  create_table :unusual_foreign_key_data do |t|
     t.integer :unusual_foreign_key, :null => false
   end
 
@@ -56,24 +56,43 @@ ActiveRecord::Schema.define(:version => 1) do
     t.boolean :is_live, :null => false
   end
 
-  create_table :scoped_account_subjects do |t|
+  create_table :scoped_account_data do |t|
     t.boolean :scoped_account_id, :null => false
   end
 
-  create_table :extended_basic_account_with_other_data_subjects do |t|
-    t.integer :basic_account_id
+  create_table :as do |t|
   end
 
-  create_table :inherited_account_with_other_data_subjects do |t|
-    t.integer :inherited_account_with_other_data_id
+  create_table :a2s do |t|
   end
 
-  create_table :extended_basic_account_without_subject_inheritances do |t|
-    
+  create_table :a3s do |t|
   end
 
-  create_table :extended_basic_account_without_subject_inheritance_subjects do |t|
-    t.integer :basic_account_id
+  create_table :a4s do |t|
+  end
+
+  create_table :a5s do |t|
+  end
+
+  create_table :b_data do |t|
+    t.integer :b_id
+  end
+
+  create_table :a2_data do |t|
+    t.integer :a2_id
+  end
+
+  create_table :b3_data do |t|
+    t.integer :b3_id
+  end
+
+  create_table :a4_data do |t|
+    t.integer :a4_id
+  end
+
+  create_table :b5_data do |t|
+    t.integer :b5_id
   end
 end
 

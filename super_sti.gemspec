@@ -14,9 +14,11 @@ Gem::Specification.new do |s|
                     Means you can use STI but keep your database clean.}
 
   if RUBY_VERSION < "1.9.3"
-    s.add_dependency "rails", "~> 3.2.0"
+    s.add_dependency "active_record", "~> 3.2.0"
+    s.add_dependency "active_support", " ~> 3.2.0"
   else
-    s.add_dependency "rails", ">= 3.2.0"
+    s.add_dependency "active_record", ">= 3.2.0"
+    s.add_dependency "active_support", ">= 3.2.0"
   end
   s.add_development_dependency "rspec-rails"
   
