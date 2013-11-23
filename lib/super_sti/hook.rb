@@ -12,13 +12,13 @@ module SuperSTI
 
     def belongs_to_extra_data *args, &block
       assoc_name, options = common_setup(*args, &block)
-      belongs_to assoc_name, options
+      belongs_to assoc_name, options, &block
       @super_sti_config[assoc_name].sti_method = :belongs_to_extra_data
     end
 
     def has_extra_data *args, &block
       assoc_name, options = common_setup(*args, &block)
-      has_one assoc_name, options
+      has_one assoc_name, options, &block
       @super_sti_config[assoc_name].sti_method = :has_extra_data
     end
 

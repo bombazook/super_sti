@@ -96,7 +96,7 @@ describe "Super STI models with has_extra_data models" do
     
     # Check the database has been updated
     BankAccount.find(@bank_account.id).account_number.should == "87654321"
-  end   
+  end
 
   describe "inheritance of classes with has_one" do
     it "uses its own data type unless parent has :inherit => {:class_name => true} " do
