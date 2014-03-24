@@ -153,13 +153,26 @@ describe "Super STI models with has_extra_data models" do
 
 
   describe "support several extra_data" do
+    before :all do
+      class N < ActiveRecord::Base
+        self.table_name = 'as'
+        has_extra_data :data, :table_name => 'b_data', :foreign_key => 'b_id'
+        has_extra_data :data2, :table_name => 'a2_data', :foreign_key => 'a2_id'
+      end
+    end
     it "safely overrides existing relation" do
     end
 
     it "support method_missing on each of extra_data" do
+      a = N.create!
+      expect(a.b_id).to eq(a.id)
+      expect(a.a2_id).to eq(a.id)
     end
 
     it "support respond_to? on each of extra_data" do
+      a = N.create!
+      expect(a).to respond_to(:b_id)
+      expect(a).to respond_to(:a2_id)
     end
 
     it "creates each of extra_data subjects on base model creation" do

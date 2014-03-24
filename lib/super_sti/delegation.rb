@@ -4,7 +4,7 @@ module SuperSTI
       return true if super
       self.class.super_sti_config.keys.detect do |key|
         begin
-          __get_assoc(key).respond_to? key
+          __get_assoc(key).respond_to? *args
         rescue SuperSTI::DataMissingError
           false
         end
