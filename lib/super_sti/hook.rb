@@ -15,6 +15,7 @@ module SuperSTI
       belongs_to assoc_name, options, &block
       @super_sti_config[assoc_name].sti_method = :belongs_to_extra_data
       before_create :"#{assoc_name}"
+      setup_autobuild assoc_name unless options[:autobuild] == false
     end
 
     def has_extra_data *args, &block
@@ -22,6 +23,7 @@ module SuperSTI
       has_one assoc_name, options, &block
       @super_sti_config[assoc_name].sti_method = :has_extra_data
       before_create :"#{assoc_name}"
+      setup_autobuild assoc_name if options[:autobuild] == true
     end
 
     private
@@ -73,5 +75,13 @@ module SuperSTI
         klass
       end
     
+      def setup_autobuild assoc_name
+        unless method_defined? "#{assoc_name}_with_autobuild"
+          define_method "#{assoc_name}_with_autobuild" do
+            self.send("#{assoc_name}_without_autobuild") || self.send("build_#{assoc_name}")
+          end
+          alias_method_chain assoc_name, :autobuild
+        end
+      end
   end
 end
