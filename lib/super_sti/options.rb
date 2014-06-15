@@ -1,5 +1,5 @@
 module SuperSTI
-  PLUGIN_OPTIONS = [:inherit, :table_name]
+  PLUGIN_OPTIONS = [:inherit, :table_name, :autobuild]
   DEFAULT_OPTIONS = {autosave: true, dependent: :destroy}
   INHERITED_BY_DEFAULT = [:inherit, :class_name]
 
