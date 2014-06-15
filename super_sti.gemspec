@@ -13,13 +13,8 @@ Gem::Specification.new do |s|
   s.description = %q{Adds an has_extra_data and belongs_to_extra_data methods to ActiveRecord that find or create an extra data table. 
                     Means you can use STI but keep your database clean.}
 
-  if RUBY_VERSION < "1.9.3"
-    s.add_dependency "activerecord", "~> 3.2.0"
-    s.add_dependency "activesupport", " ~> 3.2.0"
-  else
-    s.add_dependency "activerecord", ">= 3.2.0"
-    s.add_dependency "activesupport", ">= 3.2.0"
-  end
+  s.add_dependency "activerecord", ">= 3.2.0"
+  s.add_dependency "activesupport", ">= 3.2.0"
   s.add_development_dependency "ancestry"
   s.add_development_dependency "rspec-rails"
   
