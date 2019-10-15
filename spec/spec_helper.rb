@@ -1,21 +1,21 @@
 ENV["RAILS_ENV"] ||= 'test'
 
+require 'bundler'
 require 'rails'
 require 'rspec-rails'
 require 'active_record'
+Bundler.require(:default, :test)
 
 $:.unshift File.dirname(__FILE__) + '/../lib'
 
 # Thie first line isn't working so I have added the second...
 require File.dirname(__FILE__) + '/../lib/super_sti'
 ActiveRecord::Base.send(:extend, SuperSTI::Hook)
- 
-ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
- 
-# AR keeps printing annoying schema statements
-$stdout = StringIO.new
 
-ActiveRecord::Base.logger
+ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
+
+# AR keeps printing annoying schema statements
+ActiveRecord::Schema.verbose = false
 ActiveRecord::Schema.define(:version => 1) do
   create_table :accounts do |t|
     t.float :balance
@@ -26,7 +26,7 @@ ActiveRecord::Schema.define(:version => 1) do
   create_table :basic_account_data do |t|
     t.integer :basic_account_id, :null => false
   end
-  
+
   create_table :bank_account_data do |t|
     t.integer :bank_account_id, :null => false
     t.integer :bank_id, :null => false
@@ -43,13 +43,14 @@ ActiveRecord::Schema.define(:version => 1) do
   create_table :banks do |t|
     t.string :name, :null => false
   end
-  
+
   create_table :unusual_table_name do |t|
     t.integer :unusual_table_name_id, :null => false
   end
 
   create_table :unusual_foreign_key_data do |t|
     t.integer :unusual_foreign_key, :null => false
+    t.string :test_info
   end
 
   create_table :scoped_accounts do |t|

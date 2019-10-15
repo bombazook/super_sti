@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.email       = ["jez.walker@gmail.com", "bombazook@gmail.com"]
   s.homepage    = "https://github.com/iHiD/super_sti"
   s.summary     = %q{Ruby Rails - Add has_extra_data, belongs_to_extra_data to STI models with clean database tables.}
-  s.description = %q{Adds an has_extra_data and belongs_to_extra_data methods to ActiveRecord that find or create an extra data table. 
+  s.description = %q{Adds an has_extra_data and belongs_to_extra_data methods to ActiveRecord that find or create an extra data table.
                     Means you can use STI but keep your database clean.}
 
   if RUBY_VERSION < "1.9.3"
@@ -22,7 +22,9 @@ Gem::Specification.new do |s|
   end
   s.add_development_dependency "ancestry"
   s.add_development_dependency "rspec-rails"
-  
+  s.add_development_dependency "appraisal"
+  s.add_development_dependency "gems"
+
   s.rubyforge_project = "has_extra_data"
 
   s.files         = `git ls-files`.split("\n")
